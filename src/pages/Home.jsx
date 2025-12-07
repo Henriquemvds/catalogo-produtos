@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import "../styles/Home.css";
 import axios from "axios";
 
 export default function Home() {
     const [produtos, setProdutos] = useState([]);
+    const [carrossel, setCarrossel] = useState({}); // estado global do carrossel
 
     useEffect(() => {
         axios.get("http://localhost:3000/produtos")
@@ -11,8 +13,14 @@ export default function Home() {
 
                 if (Array.isArray(items)) {
                     setProdutos(items);
+
+                    // Inicializa o índice de cada produto como 0
+                    const inicial = {};
+                    items.forEach(p => inicial[p.produto_id] = 0);
+                    setCarrossel(inicial);
+
                 } else {
-                    console.error("A API não retornou um array em data.items:", items);
+                    console.error("A API não retornou um array:", items);
                     setProdutos([]);
                 }
             })
@@ -21,59 +29,91 @@ export default function Home() {
             });
     }, []);
 
+    // Trocar imagem para frente
+    const nextImg = (produtoId, total) => {
+        setCarrossel(prev => ({
+            ...prev,
+            [produtoId]: (prev[produtoId] + 1) % total
+        }));
+    };
+
+    // Trocar imagem para trás
+    const prevImg = (produtoId, total) => {
+        setCarrossel(prev => ({
+            ...prev,
+            [produtoId]: (prev[produtoId] - 1 + total) % total
+        }));
+    };
+
     return (
-        <div style={{ padding: "20px" }}>
-            <h1>Produtos</h1>
+        <div className="catalogo-container">
+            <h1 className="catalogo-titulo">Produtos</h1>
 
-            {produtos.map((p) => {
-                // pega primeira imagem
-                const imagemPrincipal = p.midias?.length
-                    ? `https://magazord-public.s3.sa-east-1.amazonaws.com/rodapeshop/${p.midias[0].path}${p.midias[0].arquivo_nome}`
-                    : "/sem-imagem.png";
+            <div className="catalogo-grid">
+                {produtos.map((p) => {
 
-                return (
-                    <div key={p.produto_id}>
-                        <img
-                            src={imagemPrincipal}
-                            alt={p.nome}
-                            style={{ width: "180px", marginBottom: "10px" }}
-                        />
+                    const midias = p.midias || [];
+                    const totalImagens = midias.length;
 
-                        <h2>{p.nome}</h2>
+                    const indexAtual = carrossel[p.produto_id] ?? 0;
 
-                        <p><strong>Marca:</strong> {p.marca}</p>
-                        <p><strong>Modelo:</strong> {p.modelo}</p>
+                    const imagemAtual = totalImagens > 0
+                        ? `https://magazord-public.s3.sa-east-1.amazonaws.com/rodapeshop/${midias[indexAtual].path}${midias[indexAtual].arquivo_nome}`
+                        : "/sem-imagem.png";
 
-                        <p><strong>Preço:</strong> R$ {p.valor}</p>
+                    return (
+                        <div key={p.produto_id} className="produto-card">
 
-                        {p.valor_de &&
-                            <p>De: R$ {p.valor_de}</p>
-                        }
+                            {/* CARROSSEL */}
+                            <div className="carrossel-container">
+                                <div
+                                    className="carrossel-slide"
+                                    style={{ transform: `translateX(-${indexAtual * 100}%)` }}
+                                >
+                                    {midias.map((m, i) => (
+                                        <img
+                                            key={i}
+                                            src={`https://magazord-public.s3.sa-east-1.amazonaws.com/rodapeshop/${m.path}${m.arquivo_nome}`}
+                                            alt={p.nome}
+                                            className="carrossel-img"
+                                        />
+                                    ))}
+                                </div>
 
-                        <p><strong>Estoque:</strong> {p.qtde_estoque}</p>
+                                {totalImagens > 1 && (
+                                    <>
+                                        <button
+                                            className="carrossel-btn esquerda"
+                                            onClick={() => prevImg(p.produto_id, totalImagens)}
+                                        >
+                                            &#8249;
+                                        </button>
 
-                        <p><strong>Complemento:</strong> {p.complemento}</p>
+                                        <button
+                                            className="carrossel-btn direita"
+                                            onClick={() => nextImg(p.produto_id, totalImagens)}
+                                        >
+                                            &#8250;
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                            <h2 className="produto-nome">{p.nome}</h2>
 
-                        <a href={`/produto/${p.link}`}>
-                            Ver Produto
-                        </a>
+                            <p className="produto-info"><strong>Marca:</strong> {p.marca}</p>
+                            <p className="produto-info"><strong>Modelo:</strong> {p.modelo}</p>
 
-                        <h3>Características</h3>
-                        <ul>
-                            {p.caracteristicas.map((c, i) => (
-                                <li key={i}>
-                                    <strong>{c.nome}</strong>{" "}
-                                    {c.procar_valor ||
-                                        (c.carlis_valor
-                                            ? c.carlis_valor.join(", ")
-                                            : "")
-                                    }
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                );
-            })}
+                            <p className="produto-preco">
+                                R$ {p.valor.toFixed(2)}
+                            </p>
+
+                            {p.valor_de && (
+                                <p className="produto-preco-de">De: R$ {p.valor_de.toFixed(2)}</p>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }
