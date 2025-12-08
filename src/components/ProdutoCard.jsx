@@ -13,10 +13,7 @@ const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg 
 
                 <div
                     className="carrossel-slide"
-                    style={{
-                        width: `${totalImagens * 100}%`,
-                        transform: `translateX(-${indexAtual * (100 / totalImagens)}%)`,
-                    }}
+                    style={{ transform: `translateX(-${indexAtual * 100}%)` }}
                 >
                     {midias.map((m, idx) => {
                         const url = `https://magazord-public.s3.sa-east-1.amazonaws.com/rodapeshop/${m.path}${m.arquivo_nome}`;
@@ -27,7 +24,6 @@ const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg 
                                 src={url}
                                 alt={p.nome}
                                 className="carrossel-img"
-                                style={{ width: `${100 / totalImagens}%` }}
                             />
                         );
                     })}

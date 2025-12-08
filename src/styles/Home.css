@@ -1,3 +1,6 @@
+/* =============================
+   CONTAINER GERAL
+============================= */
 .catalogo-container {
     padding: 30px;
     max-width: 1200px;
@@ -11,8 +14,74 @@
     color: #333;
 }
 
+/* =============================
+   GRID PRINCIPAL
+============================= */
 .catalogo-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 25px;
+}
+
+/* =============================
+   🔥 RESPONSIVIDADE
+============================= */
+
+/* 📱 Celular compacto (<= 360px) */
+@media (max-width: 360px) {
+    .catalogo-container {
+        padding: 15px;
+    }
+
+    .catalogo-titulo {
+        font-size: 20px;
+    }
+
+    .catalogo-grid {
+        grid-template-columns: 1fr; /* 1 card por linha */
+        gap: 18px;
+    }
+}
+
+/* 📱 Celular comum (<= 480px) */
+@media (max-width: 480px) {
+    .catalogo-container {
+        padding: 20px;
+    }
+
+    .catalogo-titulo {
+        font-size: 22px;
+    }
+
+    .catalogo-grid {
+        grid-template-columns: 1fr; /* 1 card por linha */
+        gap: 20px;
+    }
+}
+
+/* 📱 Tablet pequeno (<= 768px) */
+@media (max-width: 768px) {
+    .catalogo-container {
+        padding: 25px;
+    }
+
+    .catalogo-titulo {
+        font-size: 26px;
+    }
+
+    .catalogo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 22px;
+    }
+}
+
+/* 📱 Tablet padrão (<= 1024px) */
+@media (max-width: 1024px) {
+    .catalogo-container {
+        padding: 30px;
+    }
+
+    .catalogo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
 }
