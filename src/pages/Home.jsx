@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import "../styles/Home.css";
 import axios from "axios";
 import ProdutoCard from "../components/ProdutoCard";  // ⬅ IMPORTADO
+import NavBar from "../components/NavBar";
 
 const limit = 60;
 
@@ -14,7 +15,7 @@ export default function Home() {
 
     const sentinelaRef = useRef(null);
 
-   useEffect(() => {
+    useEffect(() => {
         if (!hasMore || loading) return;
 
         const carregar = async () => {
@@ -99,24 +100,27 @@ export default function Home() {
     };
 
     return (
-        <div className="catalogo-container">
-            <h1 className="catalogo-titulo">Produtos</h1>
+        <div>
+            <NavBar />
+            <div className="catalogo-container">
+                <h1 className="catalogo-titulo">Produtos</h1>
 
-            <div className="catalogo-grid">
-                {produtos.map((p) => (
-                    <ProdutoCard
-                        key={p.produto_id}
-                        p={p}
-                        indexAtual={carrossel[p.produto_id] ?? 0}
-                        nextImg={nextImg}
-                        prevImg={prevImg}
-                    />
-                ))}
+                <div className="catalogo-grid">
+                    {produtos.map((p) => (
+                        <ProdutoCard
+                            key={p.produto_id}
+                            p={p}
+                            indexAtual={carrossel[p.produto_id] ?? 0}
+                            nextImg={nextImg}
+                            prevImg={prevImg}
+                        />
+                    ))}
+                </div>
+
+                <div ref={sentinelaRef} style={{ height: "40px" }} />
+
+                {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
             </div>
-
-            <div ref={sentinelaRef} style={{ height: "40px" }} />
-
-            {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
         </div>
     );
 }

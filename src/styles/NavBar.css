@@ -1,0 +1,113 @@
+/* ===== NavBar.css ===== */
+.navbar {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    padding: 30px;
+}
+
+
+.nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+
+
+.nav-logo-img {
+    width: 150px;
+    height: auto;
+}
+
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 32px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #000;
+}
+
+
+.nav-menu li {
+    cursor: pointer;
+    transition: color 0.25s;
+}
+
+
+.nav-menu li:hover {
+    color: #F47844;
+}
+
+.nav-cta {
+    width: 220px;
+    padding: 8px 14px;
+    border-radius: 12px;
+    border: 2px solid #F47844;
+    background: white;
+    color: #184B89;
+    font-size: 16px;
+    font-weight: 500;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+
+.nav-cta::placeholder {
+    color: #184B89;
+    opacity: 0.6;
+}
+
+
+.nav-cta:focus {
+    border-color: #184B89;
+    box-shadow: 0 0 6px rgba(24, 75, 137, 0.4);
+}
+
+
+.nav-cta:hover {
+    opacity: 0.9;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 400px;
+    /* ajuste se quiser maior/menor */
+}
+
+.search-wrapper .nav-cta {
+    width: 100%;
+    padding-right: 42px;
+    /* espaço para o ícone */
+
+
+}
+
+.search-wrapper .nav-cta::placeholder {
+    color: #000;
+}
+
+.search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    color: white;
+    cursor: pointer;
+    /* ícone não atrapalha clique */
+}
+
+.nav-mobile-btn {
+    display: block;
+    font-size: 28px;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
