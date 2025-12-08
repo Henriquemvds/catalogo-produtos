@@ -1,4 +1,4 @@
-/* ===== NavBar.css ===== */
+/* ===== NavBar Base ===== */
 .navbar {
     background: #fff;
     display: flex;
@@ -8,21 +8,10 @@
     padding: 30px;
 }
 
-
-.nav-logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-
-
-
 .nav-logo-img {
     width: 150px;
     height: auto;
 }
-
 
 .nav-menu {
     display: flex;
@@ -33,17 +22,16 @@
     color: #000;
 }
 
-
 .nav-menu li {
     cursor: pointer;
     transition: color 0.25s;
 }
 
-
 .nav-menu li:hover {
     color: #F47844;
 }
 
+/* ===== INPUT DE PESQUISA ===== */
 .nav-cta {
     width: 220px;
     padding: 8px 14px;
@@ -57,35 +45,29 @@
     transition: 0.2s ease;
 }
 
-
 .nav-cta::placeholder {
     color: #184B89;
     opacity: 0.6;
 }
-
 
 .nav-cta:focus {
     border-color: #184B89;
     box-shadow: 0 0 6px rgba(24, 75, 137, 0.4);
 }
 
-
 .nav-cta:hover {
     opacity: 0.9;
 }
 
+/* ===== Search Wrapper ===== */
 .search-wrapper {
     position: relative;
     width: 400px;
-    /* ajuste se quiser maior/menor */
 }
 
 .search-wrapper .nav-cta {
     width: 100%;
     padding-right: 42px;
-    /* espaço para o ícone */
-
-
 }
 
 .search-wrapper .nav-cta::placeholder {
@@ -98,16 +80,86 @@
     top: 50%;
     transform: translateY(-50%);
     font-size: 18px;
-    color: white;
+    color: #184B89;
     cursor: pointer;
-    /* ícone não atrapalha clique */
 }
 
-.nav-mobile-btn {
-    display: block;
-    font-size: 28px;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
+/* ==================================================================== */
+/* ======================= RESPONSIVIDADE ============================= */
+/* ==================================================================== */
+
+/* ===== Tablets (≤ 1024px) ===== */
+@media (max-width: 1024px) {
+    .navbar {
+        padding: 20px;
+    }
+
+    .nav-logo-img {
+        width: 130px;
+    }
+
+    .search-wrapper {
+        width: 300px;
+    }
+
+    .nav-menu {
+        gap: 20px;
+        font-size: 15px;
+    }
+}
+
+/* ===== Celulares (≤ 768px) ===== */
+@media (max-width: 768px) {
+    .navbar {
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 18px;
+    }
+
+    .search-wrapper {
+        width: 100%;
+        order: 3;
+    }
+
+    .nav-menu {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+        gap: 18px;
+        font-size: 14px;
+    }
+
+    .nav-logo-img {
+        width: 120px;
+    }
+}
+
+/* ===== Celular compacto (≤ 480px) ===== */
+@media (max-width: 480px) {
+    .navbar {
+        padding: 14px;
+    }
+
+    .nav-logo-img {
+        width: 100px;
+    }
+
+    .nav-menu {
+        gap: 14px;
+        font-size: 13px;
+    }
+
+    .search-wrapper {
+        width: 100%;
+    }
+
+    .nav-cta {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+
+    .search-icon {
+        font-size: 16px;
+        right: 10px;
+    }
 }
