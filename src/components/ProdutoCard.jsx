@@ -1,26 +1,39 @@
 import { memo } from "react";
+import "../styles/ProdutoCard.css";
 
 const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg }) {
     const midias = p.midias || [];
     const totalImagens = midias.length;
 
-    const m = midias[indexAtual] || null;
-
-    const imagemAtual = m
-        ? `https://magazord-public.s3.sa-east-1.amazonaws.com/rodapeshop/${m.path}${m.arquivo_nome}`
-        : "/sem-imagem.png";
-
     return (
         <div className="produto-card" key={p.produto_id}>
-            
-            <div className="carrossel-container">
-                <img
-                    loading="lazy"
-                    src={imagemAtual}
-                    alt={p.nome}
-                    className="carrossel-img"
-                />
 
+            {/* CARROSSEL */}
+            <div className="carrossel-container">
+
+                <div
+                    className="carrossel-slide"
+                    style={{
+                        width: `${totalImagens * 100}%`,
+                        transform: `translateX(-${indexAtual * (100 / totalImagens)}%)`,
+                    }}
+                >
+                    {midias.map((m, idx) => {
+                        const url = `https://magazord-public.s3.sa-east-1.amazonaws.com/rodapeshop/${m.path}${m.arquivo_nome}`;
+                        return (
+                            <img
+                                key={idx}
+                                loading="lazy"
+                                src={url}
+                                alt={p.nome}
+                                className="carrossel-img"
+                                style={{ width: `${100 / totalImagens}%` }}
+                            />
+                        );
+                    })}
+                </div>
+
+                {/* BOTÕES */}
                 {totalImagens > 1 && (
                     <>
                         <button
@@ -40,6 +53,7 @@ const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg 
                 )}
             </div>
 
+            {/* INFORMAÇÕES DO PRODUTO */}
             <h2 className="produto-nome">{p.nome}</h2>
 
             <p className="produto-info">
