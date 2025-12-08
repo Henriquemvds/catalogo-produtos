@@ -14,7 +14,7 @@ export default function Home() {
 
     const sentinelaRef = useRef(null);
 
-    useEffect(() => {
+   useEffect(() => {
         if (!hasMore || loading) return;
 
         const carregar = async () => {
@@ -28,8 +28,25 @@ export default function Home() {
                 const data = response.data?.data || {};
                 const items = data.items || [];
 
-                setProdutos(prev => [...prev, ...items]);
+                // 🔥 VALIDAÇÃO → impede nome duplicado
+                setProdutos(prev => {
+                    // Cria um mapa do que já existe
+                    const mapa = new Map();
+                    prev.forEach(p => {
+                        const chave = `${p.produto_id}|${p.nome.toLowerCase()}`;
+                        mapa.set(chave, true);
+                    });
 
+                    // Filtra somente novos que não são duplicados
+                    const filtrados = items.filter(p => {
+                        const chave = `${p.produto_id}|${p.nome.toLowerCase()}`;
+                        if (mapa.has(chave)) return false;
+                        mapa.set(chave, true);
+                        return true;
+                    });
+
+                    return [...prev, ...filtrados];
+                });
                 setCarrossel(prev => {
                     const novo = { ...prev };
                     items.forEach(p => {
