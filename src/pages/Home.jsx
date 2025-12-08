@@ -4,30 +4,52 @@ import axios from "axios";
 
 export default function Home() {
     const [produtos, setProdutos] = useState([]);
-    const [carrossel, setCarrossel] = useState({}); // estado global do carrossel
+    const [carrossel, setCarrossel] = useState({});
+    const limit = 100;
 
     useEffect(() => {
-        axios.get("http://localhost:3000/produtos")
-            .then(response => {
-                const items = response.data?.data?.items;
+        const carregarTudo = async () => {
+            let page = 1;
+            let todos = [];
+            let continuar = true;
 
-                if (Array.isArray(items)) {
-                    setProdutos(items);
+            while (continuar) {
+                try {
+                    const response = await axios.get(
+                        `http://localhost:3000/produtos/page/${page}/limit/${limit}`
+                    );
 
-                    // Inicializa o índice de cada produto como 0
-                    const inicial = {};
-                    items.forEach(p => inicial[p.produto_id] = 0);
-                    setCarrossel(inicial);
+                    const data = response.data?.data;
+                    const items = data?.items;
 
-                } else {
-                    console.error("A API não retornou um array:", items);
-                    setProdutos([]);
+                    if (Array.isArray(items) && items.length > 0) {
+                        todos = [...todos, ...items];
+
+                        // Verificar se há mais páginas
+                        continuar = data?.has_more === true;
+                        page++; // próxima página
+                    } else {
+                        continuar = false;
+                    }
+
+                } catch (err) {
+                    console.error("Erro ao carregar página:", page, err);
+                    continuar = false;
                 }
-            })
-            .catch(error => {
-                console.error("Erro ao carregar produtos:", error);
-            });
+            }
+
+            // Atualiza o estado com todos os produtos combinados
+            setProdutos(todos);
+
+            // Inicializa o carrossel para todos
+            const inicial = {};
+            todos.forEach(p => inicial[p.produto_id] = 0);
+            setCarrossel(inicial);
+        };
+
+        carregarTudo();
     }, []);
+
 
     // Trocar imagem para frente
     const nextImg = (produtoId, total) => {
@@ -50,7 +72,7 @@ export default function Home() {
             <h1 className="catalogo-titulo">Produtos</h1>
 
             <div className="catalogo-grid">
-                {produtos.map((p) => {
+                {produtos.map((p, index) => {
 
                     const midias = p.midias || [];
                     const totalImagens = midias.length;
@@ -62,7 +84,7 @@ export default function Home() {
                         : "/sem-imagem.png";
 
                     return (
-                        <div key={p.produto_id} className="produto-card">
+                        <div  key={`${p.produto_id}-${index}`} className="produto-card">
 
                             {/* CARROSSEL */}
                             <div className="carrossel-container">
