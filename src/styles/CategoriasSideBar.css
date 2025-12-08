@@ -44,3 +44,55 @@
 .catalogo-container {
     flex: 1;
 }
+
+/* ========================================================= */
+/* 🔵 RESPONSIVIDADE */
+/* ========================================================= */
+
+/* 📱 1) Celular compacto (até 480px) */
+@media (max-width: 480px) {
+    .catalogo-wrapper {
+        flex-direction: column;
+        padding: 10px;
+        gap: 16px;
+    }
+
+    .categorias-sidebar {
+        width: 100%;
+        padding: 16px;
+        text-align: center;
+    }
+
+    .categorias-sidebar h2 {
+        font-size: 18px;
+    }
+
+    .categorias-sidebar li {
+        font-size: 15px;
+        padding: 10px;
+    }
+}
+
+/* 📱 2) Celular normal (481px a 768px) */
+@media (max-width: 768px) {
+    .catalogo-wrapper {
+        flex-direction: column;
+        padding: 14px;
+        gap: 18px;
+    }
+
+    .categorias-sidebar {
+        width: 100%;
+    }
+}
+
+/* 📱 3) Tablet (769px a 1024px) */
+@media (max-width: 1024px) {
+    .catalogo-wrapper {
+        gap: 20px;
+    }
+
+    .categorias-sidebar {
+        width: 180px;
+    }
+}
