@@ -3,6 +3,7 @@ import "../styles/Home.css";
 import axios from "axios";
 import ProdutoCard from "../components/ProdutoCard";  // ⬅ IMPORTADO
 import NavBar from "../components/NavBar";
+import CategoriasSideBar from "../components/CategoriasSideBar";
 
 const limit = 60;
 
@@ -99,9 +100,15 @@ export default function Home() {
         }));
     };
 
-    return (
-        <div>
-            <NavBar />
+ return (
+    <div>
+        <NavBar />
+
+        <div className="catalogo-wrapper">
+            {/* ⭐ LISTA DE CATEGORIAS */}
+            <CategoriasSideBar />
+
+            {/* ⭐ CATÁLOGO DE PRODUTOS */}
             <div className="catalogo-container">
                 <h1 className="catalogo-titulo">Produtos</h1>
 
@@ -119,8 +126,11 @@ export default function Home() {
 
                 <div ref={sentinelaRef} style={{ height: "40px" }} />
 
-                {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
+                {loading && (
+                    <p style={{ textAlign: "center" }}>Carregando...</p>
+                )}
             </div>
         </div>
-    );
+    </div>
+);
 }

@@ -1,0 +1,46 @@
+/* 🟦 Wrapper geral: sidebar + catalogo */
+.catalogo-wrapper {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    padding: 20px;
+}
+
+/* 🟧 Sidebar */
+.categorias-sidebar {
+    width: 220px;
+    background: linear-gradient(180deg, #184B89, #F47844);
+    padding: 20px;
+    border-radius: 12px;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.categorias-sidebar h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid rgba(255,255,255,0.4);
+    padding-bottom: 6px;
+}
+
+.categorias-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.categorias-sidebar li {
+    padding: 8px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.25s;
+}
+
+.categorias-sidebar li:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+/* 🟩 Mantém seu catálogo exatamente como está */
+.catalogo-container {
+    flex: 1;
+}
