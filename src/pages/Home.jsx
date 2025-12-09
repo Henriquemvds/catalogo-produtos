@@ -1,91 +1,66 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import "../styles/Home.css";
 import axios from "axios";
-import ProdutoCard from "../components/ProdutoCard";  // ⬅ IMPORTADO
+import ProdutoCard from "../components/ProdutoCard";
 import NavBar from "../components/NavBar";
 import CategoriasSideBar from "../components/CategoriasSideBar";
+import Pagination from "../components/Pagination";
 
-const limit = 60;
+const limit = 30;
 
 export default function Home() {
     const [produtos, setProdutos] = useState([]);
     const [carrossel, setCarrossel] = useState({});
     const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+    const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
 
-    const sentinelaRef = useRef(null);
+ useEffect(() => {
+    const carregar = async () => {
+        try {
+            setLoading(true);
 
-    useEffect(() => {
-        if (!hasMore || loading) return;
+            const url = `http://localhost:3000/produtos/page/${page}/limit/${limit}`;
+            const response = await axios.get(url);
 
-        const carregar = async () => {
-            try {
-                setLoading(true);
+            const data = response.data?.data || {};
+            const items = data.items || [];
+            const total = data.total || 0;
 
-                const response = await axios.get(
-                    `http://localhost:3000/produtos/page/${page}/limit/${limit}`
-                );
+            setTotalPages(Math.ceil(total / limit));
 
-                const data = response.data?.data || {};
-                const items = data.items || [];
+            // 🔥 FILTRAR DUPLICADOS SÓ DENTRO DA PÁGINA ATUAL
+            const mapa = new Map();
+            const filtrados = items.filter(p => {
+                const chave = `${p.produto_id}|${p.nome.toLowerCase()}`;
+                if (mapa.has(chave)) return false;
+                mapa.set(chave, true);
+                return true;
+            });
 
-                // 🔥 VALIDAÇÃO → impede nome duplicado
-                setProdutos(prev => {
-                    // Cria um mapa do que já existe
-                    const mapa = new Map();
-                    prev.forEach(p => {
-                        const chave = `${p.produto_id}|${p.nome.toLowerCase()}`;
-                        mapa.set(chave, true);
-                    });
+            // 🔥 Agora sim: redefine produtos sem acumular páginas
+            setProdutos(filtrados);
 
-                    // Filtra somente novos que não são duplicados
-                    const filtrados = items.filter(p => {
-                        const chave = `${p.produto_id}|${p.nome.toLowerCase()}`;
-                        if (mapa.has(chave)) return false;
-                        mapa.set(chave, true);
-                        return true;
-                    });
-
-                    return [...prev, ...filtrados];
+            // Reseta carrossel apenas com os itens filtrados
+            setCarrossel(() => {
+                const novo = {};
+                filtrados.forEach(p => {
+                    novo[p.produto_id] = 0;
                 });
-                setCarrossel(prev => {
-                    const novo = { ...prev };
-                    items.forEach(p => {
-                        if (novo[p.produto_id] == null) {
-                            novo[p.produto_id] = 0;
-                        }
-                    });
-                    return novo;
-                });
+                return novo;
+            });
 
-                setHasMore(data.has_more === true);
-                setLoading(false);
-            } catch (err) {
-                console.error("Erro ao carregar página:", page, err);
-                setLoading(false);
-                setHasMore(false);
-            }
-        };
+            setLoading(false);
+        } catch (err) {
+            console.error("Erro ao carregar:", err);
+            setLoading(false);
+        }
+    };
 
-        carregar();
-    }, [page]);
+    carregar();
+}, [page, limit]);
 
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            entries => {
-                if (entries[0].isIntersecting && hasMore && !loading) {
-                    setPage(p => p + 1);
-                }
-            },
-            { rootMargin: "300px" }
-        );
-
-        if (sentinelaRef.current) observer.observe(sentinelaRef.current);
-
-        return () => observer.disconnect();
-    }, [hasMore, loading]);
-
+    // Controles de carrossel
     const nextImg = (produtoId, total) => {
         setCarrossel(prev => ({
             ...prev,
@@ -100,37 +75,38 @@ export default function Home() {
         }));
     };
 
- return (
-    <div>
-        <NavBar />
+    return (
+        <div>
+            <NavBar />
 
-        <div className="catalogo-wrapper">
-            {/* ⭐ LISTA DE CATEGORIAS */}
-            <CategoriasSideBar />
+            <div className="catalogo-wrapper">
+                <CategoriasSideBar />
 
-            {/* ⭐ CATÁLOGO DE PRODUTOS */}
-            <div className="catalogo-container">
-                <h1 className="catalogo-titulo">Produtos</h1>
+                <div className="catalogo-container">
+                    <h1 className="catalogo-titulo">Produtos</h1>
 
-                <div className="catalogo-grid">
-                    {produtos.map((p) => (
-                        <ProdutoCard
-                            key={p.produto_id}
-                            p={p}
-                            indexAtual={carrossel[p.produto_id] ?? 0}
-                            nextImg={nextImg}
-                            prevImg={prevImg}
-                        />
-                    ))}
+                    {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
+
+                    <div className="catalogo-grid">
+                        {produtos.map((p) => (
+                            <ProdutoCard
+                                key={p.produto_id}
+                                p={p}
+                                indexAtual={carrossel[p.produto_id] ?? 0}
+                                nextImg={nextImg}
+                                prevImg={prevImg}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Paginação */}
+                    <Pagination
+                        currentPage={page}
+                        totalPages={totalPages}
+                        setCurrentPage={setPage}
+                    />
                 </div>
-
-                <div ref={sentinelaRef} style={{ height: "40px" }} />
-
-                {loading && (
-                    <p style={{ textAlign: "center" }}>Carregando...</p>
-                )}
             </div>
         </div>
-    </div>
-);
+    );
 }
