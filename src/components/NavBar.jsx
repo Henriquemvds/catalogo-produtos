@@ -1,30 +1,50 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles/NavBar.css";
 import logo from "../images/logo.webp";
 
-export default function NavBar() {
+export default function NavBar({ ResultsSearch }) {
+    const [searchText, setSearchText] = useState("");
+
+    const handleSearch = async () => {
+        if (!searchText.trim()) return;
+
+        try {
+            const response = await fetch(`http://localhost:3000/produtos/search?q=${encodeURIComponent(searchText)}`);
+            const data = await response.json();
+
+            console.log("Resultado da busca:", data);
+
+            // 🔥 AGORA ENVIA PARA O COMPONENTE PAI
+            ResultsSearch(data);
+
+        } catch (error) {
+            console.error("Erro ao buscar:", error);
+        }
+    };
+
     return (
         <nav className="navbar">
-            {/* Logo */}
             <div className="nav-logo">
-
                 <img src={logo} alt="Logo RodapeShop" className="nav-logo-img" />
             </div>
 
-
-            {/* Menu */}
             <div className="nav-menu">
-               <h3>Conheça nosso Catalogo de produtos</h3>
+                <h3>Conheça nosso Catálogo de produtos</h3>
             </div>
 
+            <div className="search-wrapper">
+                <input
+                    type="search"
+                    className="nav-cta"
+                    placeholder="O que você procura?"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                />
 
-            {/* Botão CTA */}
-            <div class="search-wrapper">
-                <input type="search" className="nav-cta" placeholder="O que você Procura?" />
-                <span className="search-icon">🔍</span>
+                <span className="search-icon" onClick={handleSearch} style={{ cursor: "pointer" }}>
+                    🔍
+                </span>
             </div>
-
-
         </nav>
     );
 }
