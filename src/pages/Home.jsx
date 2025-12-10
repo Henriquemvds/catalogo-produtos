@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import "../styles/Home.css";
 import axios from "axios";
 import ProdutoCard from "../components/ProdutoCard";
@@ -10,17 +10,17 @@ const limit = 30;
 
 export default function Home() {
     const [produtos, setProdutos] = useState([]);
-    const [produtosBusca, setProdutosBusca] = useState(null); // <-- resultados da busca
+    const [produtosBusca, setProdutosBusca] = useState(null);
     const [carrossel, setCarrossel] = useState({});
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
 
-    // ===========================
-    // MODO NORMAL (sem busca)
-    // ===========================
+    // ======================================================
+    // CARREGAMENTO NORMAL (quando NÃO está em modo de busca)
+    // ======================================================
     useEffect(() => {
-        if (produtosBusca !== null) return; // se estiver buscando, não carregar API normal
+        if (produtosBusca !== null) return;
 
         const carregar = async () => {
             try {
@@ -35,12 +35,11 @@ export default function Home() {
 
                 setTotalPages(Math.ceil(total / limit));
 
-                // remover duplicados
+                // Remove duplicados por produto_id
                 const mapa = new Map();
                 const filtrados = items.filter(p => {
-                    const chave = `${p.produto_id}|${p.nome.toLowerCase()}`;
-                    if (mapa.has(chave)) return false;
-                    mapa.set(chave, true);
+                    if (mapa.has(p.produto_id)) return false;
+                    mapa.set(p.produto_id, true);
                     return true;
                 });
 
@@ -54,48 +53,76 @@ export default function Home() {
         };
 
         carregar();
-    }, [page, limit, produtosBusca]);
+    }, [page, produtosBusca]);
 
-
-
-    // ===========================
-    // MODO BUSCA (paginate localmente)
-    // ===========================
+    // ======================================================
+    // PAGINAÇÃO LOCAL (modo busca)
+    // ======================================================
     const getProdutosPaginados = () => {
         if (!produtosBusca) return produtos;
+
         const inicio = (page - 1) * limit;
-        const fim = inicio + limit;
-        return produtosBusca.slice(inicio, fim);
+        return produtosBusca.slice(inicio, inicio + limit);
     };
 
-    // Atualiza totalPages dinamicamente quando é busca
     useEffect(() => {
         if (produtosBusca) {
             setTotalPages(Math.ceil(produtosBusca.length / limit));
-            setPage(1); // reseta para página 1
+            setPage(1);
         }
     }, [produtosBusca]);
 
+    // ======================================================
+    // LISTA FINAL MEMORIZADA
+    // ======================================================
+    const listaFinal = useMemo(() => {
+        return produtosBusca ? getProdutosPaginados() : produtos;
+    }, [produtosBusca, produtos, page]);
 
-
-    // ===========================
-    // RECRIAR CARROSSEL SEMPRE
-    // ===========================
-    useEffect(() => {
-        const lista = produtosBusca ? getProdutosPaginados() : produtos;
-
-        const novo = {};
-        lista.forEach((p) => {
-            novo[p.produto_id] = 0;
+    // ======================================================
+    // REMOVER DUPLICADOS DA LISTA FINAL (produto_id)
+    // ======================================================
+    const listaFinalSemDuplicados = useMemo(() => {
+        const mapa = new Map();
+        return listaFinal.filter(p => {
+            if (mapa.has(p.produto_id)) return false;
+            mapa.set(p.produto_id, true);
+            return true;
         });
-        setCarrossel(novo);
-    }, [produtos, produtosBusca, page]);
+    }, [listaFinal]);
 
+    // ======================================================
+    // ATUALIZAR CARROSSEL SOMENTE PARA PRODUTOS NOVOS
+    // ======================================================
+    useEffect(() => {
+        setCarrossel(prev => {
+            const novo = { ...prev };
 
+            listaFinalSemDuplicados.forEach(p => {
+                if (!(p.produto_id in novo)) {
+                    novo[p.produto_id] = 0;
+                }
+            });
 
-    // ===========================
-    // CONTROLES CARROSSEL
-    // ===========================
+            return novo;
+        });
+    }, [listaFinalSemDuplicados]);
+
+    // ======================================================
+    // PRÉ-CARREGAMENTO DAS IMAGENS
+    // ======================================================
+    useEffect(() => {
+        listaFinalSemDuplicados.forEach(produto => {
+            produto.fotos?.forEach(url => {
+                const img = new Image();
+                img.src = url;
+            });
+        });
+    }, [listaFinalSemDuplicados]);
+
+    // ======================================================
+    // CONTROLES DO CARROSSEL
+    // ======================================================
     const nextImg = (produtoId, total) => {
         setCarrossel(prev => ({
             ...prev,
@@ -110,14 +137,9 @@ export default function Home() {
         }));
     };
 
-
-    const listaFinal = produtosBusca ? getProdutosPaginados() : produtos;
-
-
-
     return (
         <div>
-            <NavBar ResultsSearch={setProdutosBusca} /> {/* agora envia para produtosBusca */}
+            <NavBar ResultsSearch={setProdutosBusca} />
 
             <div className="catalogo-wrapper">
                 <CategoriasSideBar />
@@ -128,9 +150,9 @@ export default function Home() {
                     {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
 
                     <div className="catalogo-grid">
-                        {listaFinal.map((p, index) => (
+                        {listaFinalSemDuplicados.map((p) => (
                             <ProdutoCard
-                                key={`${p.produto_id}-${index}`}
+                                key={p.produto_id}
                                 p={p}
                                 indexAtual={carrossel[p.produto_id] ?? 0}
                                 nextImg={nextImg}

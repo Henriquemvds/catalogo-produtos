@@ -21,6 +21,7 @@ const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg 
                             <img
                                 key={idx}
                                 loading="lazy"
+                                decoding="async"
                                 src={url}
                                 alt={p.nome}
                                 className="carrossel-img"
