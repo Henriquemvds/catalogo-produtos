@@ -26,7 +26,7 @@ export default function Home() {
             try {
                 setLoading(true);
 
-                const url = `http://localhost:3000/produtos/page/${page}/limit/${limit}`;
+                const url = `https://servidor-magazord.vercel.app/produtos/page/${page}/limit/${limit}`;
                 const response = await axios.get(url);
 
                 const data = response.data?.data || {};
