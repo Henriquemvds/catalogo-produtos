@@ -146,9 +146,22 @@ export default function Home() {
 
                 <div className="catalogo-container">
                     <h1 className="catalogo-titulo">Produtos</h1>
+                    {/* MENSAGEM QUANDO NÃO HÁ RESULTADOS */}
+                    {!loading && listaFinalSemDuplicados.length === 0 && (
+                        <p style={{
+                            textAlign: "center",
+                            fontSize: "20px",
+                            width: "100%",
+                            padding: "40px 0",
+                            color: "#555"
+                        }}>
+                            Ops... Não temos no nosso catálogo, tente buscar outro.
+                        </p>
+                    )}
 
                     {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
 
+                    {/* GRID NORMAL */}
                     <div className="catalogo-grid">
                         {listaFinalSemDuplicados.map((p) => (
                             <ProdutoCard
