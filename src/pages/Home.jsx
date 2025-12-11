@@ -120,6 +120,12 @@ export default function Home() {
         });
     }, [listaFinalSemDuplicados]);
 
+    const scrollToProducts = () => {
+    const section = document.querySelector(".catalogo-container");
+    if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+};
     // ======================================================
     // CONTROLES DO CARROSSEL
     // ======================================================
@@ -139,7 +145,7 @@ export default function Home() {
 
     return (
         <div>
-            <NavBar ResultsSearch={setProdutosBusca} />
+            <NavBar ResultsSearch={setProdutosBusca}  ScrollToProducts={scrollToProducts} />
 
             <div className="catalogo-wrapper">
                 <CategoriasSideBar />
