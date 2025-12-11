@@ -2,25 +2,28 @@ import React, { useState } from "react";
 import "../styles/NavBar.css";
 import logo from "../images/logo.webp";
 
-export default function NavBar({ ResultsSearch }) {
+export default function NavBar({ ResultsSearch, ScrollToProducts }) {
     const [searchText, setSearchText] = useState("");
 
-    const handleSearch = async () => {
-        if (!searchText.trim()) return;
+  const handleSearch = async () => {
+    if (!searchText.trim()) return;
 
-        try {
-            const response = await fetch(`https://servidor-magazord.vercel.app/produtos/search?q=${encodeURIComponent(searchText)}`);
-            const data = await response.json();
+    try {
+        const response = await fetch(`https://servidor-magazord.vercel.app/produtos/search?q=${encodeURIComponent(searchText)}`);
+        const data = await response.json();
 
-            console.log("Resultado da busca:", data);
+        // envia resultados ao pai
+        ResultsSearch(data);
 
-            // 🔥 AGORA ENVIA PARA O COMPONENTE PAI
-            ResultsSearch(data);
+        // desce para os produtos
+        setTimeout(() => {
+            ScrollToProducts();
+        }, 50);
 
-        } catch (error) {
-            console.error("Erro ao buscar:", error);
-        }
-    };
+    } catch (error) {
+        console.error("Erro ao buscar:", error);
+    }
+};
 
     return (
         <nav className="navbar">
@@ -35,11 +38,11 @@ export default function NavBar({ ResultsSearch }) {
             <div className="search-wrapper">
                 <input
                     type="search"
+                     inputMode="search"
                     className="nav-cta"
                     placeholder="O que você procura?"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
-                    inputMode="search"
                     onKeyDown={(e) => {
                         if (e.key === "Enter") {
                             e.preventDefault();
