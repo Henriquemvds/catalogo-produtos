@@ -8,7 +8,7 @@
 
 /* 🟧 Sidebar */
 .categorias-sidebar {
-    width: 220px;
+    width: 300px;
     background: linear-gradient(180deg, #184B89, #F47844);
     padding: 20px;
     border-radius: 12px;
@@ -40,54 +40,78 @@
     background: rgba(255,255,255,0.2);
 }
 
-/* 🟩 Mantém seu catálogo exatamente como está */
-.catalogo-container {
-    flex: 1;
-}
-
-.lista-categorias,
-.sublista {
-    list-style: none;
-    padding-left: 0;
-}
+/* ===================================== */
+/* 🔥 EFEITOS DAS SUBLISTAS */
+/* ===================================== */
 
 .categoria-item {
     margin-bottom: 6px;
+    position: relative;
 }
 
-.categoria-header {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 0;
+/* 👉 SUBLISTA DO PRIMEIRO NÍVEL = abrir para a direita */
+.categoria-item > .sublista {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: 180px;
+    z-index: 9999;
+
+     background: linear-gradient(180deg, #184B89, #F47844);
+    backdrop-filter: blur(2px);
+    border-radius: 8px;
+    padding: 10px;
+
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+
+    transform: translateX(10px);
+    transition:
+        max-height 0.35s ease,
+        opacity 0.25s ease,
+        transform 0.25s ease;
 }
 
-.seta {
-    transition: transform 0.3s ease;
-    font-size: 10px;
+/* 👉 PRIMERIO NÍVEL: abre ao passar mouse */
+.categoria-item:hover > .sublista {
+    max-height: 800px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+     padding: 5px;
 }
 
-.seta.aberta {
-    transform: rotate(180deg);
-}
+/* 👉 SUBLISTAS INTERNAS (nível 2) = abrir PARA BAIXO */
+.sublista .sublista {
+    position: relative;
+    left: 0;
+    top: 0;
 
-/* --- animação dropdown --- */
-.sublista {
+    margin-left: 12px;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    padding: 5px;
+
     max-height: 0;
     overflow: hidden;
-    margin-left: 15px;
     transition: max-height 0.35s ease;
 }
 
-.sublista.mostrar {
-    max-height: 500px; /* grande o suficiente para expandir */
+/* 👉 nível 2 abre ao passar mouse */
+.sublista li:hover > .sublista {
+    max-height: 500px;
 }
 
+.seta {
+    margin-right: 5px;
+}
 
-/* ========================================================= */
-/* 🔵 RESPONSIVIDADE */
-/* ========================================================= */
+/* ===================================== */
+/* RESPONSIVIDADE (SEU CÓDIGO ORIGINAL) */
+/* ===================================== */
 
 /* 📱 1) Celular compacto (até 480px) */
 @media (max-width: 480px) {
@@ -101,15 +125,6 @@
         width: 100%;
         padding: 16px;
         text-align: center;
-    }
-
-    .categorias-sidebar h2 {
-        font-size: 18px;
-    }
-
-    .categorias-sidebar li {
-        font-size: 15px;
-        padding: 10px;
     }
 }
 
@@ -132,6 +147,4 @@
     .catalogo-wrapper {
         gap: 20px;
     }
-
-   
 }
