@@ -45,6 +45,46 @@
     flex: 1;
 }
 
+.lista-categorias,
+.sublista {
+    list-style: none;
+    padding-left: 0;
+}
+
+.categoria-item {
+    margin-bottom: 6px;
+}
+
+.categoria-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 0;
+}
+
+.seta {
+    transition: transform 0.3s ease;
+    font-size: 10px;
+}
+
+.seta.aberta {
+    transform: rotate(180deg);
+}
+
+/* --- animação dropdown --- */
+.sublista {
+    max-height: 0;
+    overflow: hidden;
+    margin-left: 15px;
+    transition: max-height 0.35s ease;
+}
+
+.sublista.mostrar {
+    max-height: 500px; /* grande o suficiente para expandir */
+}
+
+
 /* ========================================================= */
 /* 🔵 RESPONSIVIDADE */
 /* ========================================================= */
