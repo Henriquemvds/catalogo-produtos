@@ -9,7 +9,7 @@ export default function NavBar({ ResultsSearch }) {
         if (!searchText.trim()) return;
 
         try {
-            const response = await fetch(`http://localhost:3000/produtos/search?q=${encodeURIComponent(searchText)}`);
+            const response = await fetch(`https://servidor-magazord.vercel.app/produtos/search?q=${encodeURIComponent(searchText)}`);
             const data = await response.json();
 
             console.log("Resultado da busca:", data);
@@ -39,6 +39,13 @@ export default function NavBar({ ResultsSearch }) {
                     placeholder="O que você procura?"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
+                    inputMode="search"
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleSearch();
+                        }
+                    }}
                 />
 
                 <span className="search-icon" onClick={handleSearch} style={{ cursor: "pointer" }}>
