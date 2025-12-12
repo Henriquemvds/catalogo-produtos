@@ -57,7 +57,7 @@ export default function CategoriasSideBar() {
 
                 while (continuar) {
                     const res = await fetch(
-                        `http://localhost:3000/categorias/page/${page}/limit/${limit}`
+                        `https://servidor-magazord.vercel.app/page/${page}/limit/${limit}`
                     );
                     const result = await res.json();
                     const items = result?.data?.items || [];
