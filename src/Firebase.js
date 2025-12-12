@@ -4,14 +4,15 @@ import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+  apiKey: "AIzaSyCsIHI9p5QbExtfneAbs_x1r5WkSbE5tg0",
+  authDomain: "catalogo-produtos-f545f.firebaseapp.com",
+  databaseURL: "https://catalogo-produtos-f545f-default-rtdb.firebaseio.com",
+  projectId: "catalogo-produtos-f545f",
+  storageBucket: "catalogo-produtos-f545f.firebasestorage.app",
+  messagingSenderId: "509874075576",
+  appId: "1:509874075576:web:99c0c12732f46f202a814d",
+  measurementId: "G-MHW809H4EP"
 };
-
 const app = initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);

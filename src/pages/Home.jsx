@@ -249,8 +249,7 @@ export default function Home() {
     // ======================================================
     return (
         <div>
-           
-       
+        
                 <>
                     <NavBar ResultsSearch={setProdutosBusca} ScrollToProducts={scrollToProducts} />
 
