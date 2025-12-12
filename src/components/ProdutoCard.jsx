@@ -67,7 +67,11 @@ const ProdutoCard = memo(function ProdutoCard({ p, valorFinal, indexAtual, nextI
                 <strong>Modelo:</strong> {p.modelo}
             </p>
 
-            <p className="produto-preco">R$ {valorFinal.toFixed(2)}</p>
+           
+      
+    <p className="produto-preco">R$ {Number(valorFinal).toFixed(2)}</p>
+
+      
 
         </div>
     );

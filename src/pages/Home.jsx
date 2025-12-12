@@ -8,7 +8,7 @@ import Pagination from "../components/Pagination";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../Firebase";
 
-const limit = 30;
+const limit = 15;
 
 export default function Home() {
     const [produtos, setProdutos] = useState([]);
@@ -18,12 +18,18 @@ export default function Home() {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
 
-    // ✅ porcentagens carregadas de uma vez só
+    // ✅ Cache de custos por código
+    const [custosCache, setCustosCache] = useState({});
+    const [custosCarregados, setCustosCarregados] = useState(false);
+
+    // ✅ Porcentagens do Firebase
     const [porcentagensFirebase, setPorcentagensFirebase] = useState({});
+
+    // ✅ Preços finais
     const [valoresFinais, setValoresFinais] = useState({});
 
     // ======================================================
-    // ✅ CARREGAR PORCENTAGENS DO FIREBASE (1 requisição)
+    // ✅ CARREGAR PORCENTAGENS DO FIREBASE
     // ======================================================
     useEffect(() => {
         async function carregarPorcentagens() {
@@ -45,7 +51,40 @@ export default function Home() {
     }, []);
 
     // ======================================================
-    // ✅ CARREGAMENTO NORMAL (API)
+    // ✅ BUSCAR CUSTO POR CÓDIGO (com delay)
+    // ======================================================
+    async function buscarCustoPorCodigo(codigo) {
+        try {
+            const url = `http://localhost:3000/custos/produto/${codigo}`;
+            const response = await axios.get(url);
+
+            // ✅ API retorna { data: [ {...} ] }
+            const item = response.data?.data?.[0] || null;
+            const custo = item?.custoVirtual ?? null;
+
+            // ✅ Salvar no cache
+            setCustosCache(prev => ({
+                ...prev,
+                [codigo]: custo
+            }));
+
+            // ✅ Delay para não travar API
+            await new Promise(res => setTimeout(res, 200));
+
+            return custo;
+        } catch (err) {
+            console.error("Erro ao buscar custo por código:", codigo, err);
+            return null;
+        }
+    }
+
+    // ======================================================
+    // ✅ CARREGAR CUSTOS PARA OS PRODUTOS DA PÁGINA
+    // ======================================================
+
+
+    // ======================================================
+    // ✅ CARREGAMENTO NORMAL (API DE PRODUTOS)
     // ======================================================
     useEffect(() => {
         if (produtosBusca !== null) return;
@@ -63,7 +102,6 @@ export default function Home() {
 
                 setTotalPages(Math.ceil(total / limit));
 
-                // Remove duplicados por produto_id
                 const mapa = new Map();
                 const filtrados = items.filter(p => {
                     if (mapa.has(p.produto_id)) return false;
@@ -120,22 +158,30 @@ export default function Home() {
     }, [listaFinal]);
 
     // ======================================================
-    // ✅ CALCULAR VALORES FINAIS (instantâneo)
+    // ✅ CALCULAR VALORES FINAIS (CUSTO + PORCENTAGEM)
     // ======================================================
     useEffect(() => {
-        const novosValores = {};
+        const novos = {};
 
         for (const p of listaFinalSemDuplicados) {
-            const porcentagem = porcentagensFirebase[p.codigo] || 0;
+            const codigo = String(p.codigo);
+            const custo = custosCache[codigo];
 
-            const acrescimo = p.valor * (porcentagem / 100);
-            const novoValor = p.valor + acrescimo;
+            if (!custo || custo <= 0) {
+                novos[p.produto_id] = null;
+                continue;
+            }
 
-            novosValores[p.produto_id] = novoValor;
+            const porcentagem = porcentagensFirebase[codigo] || 0;
+
+            const acrescimo = custo * (porcentagem / 100);
+            const precoFinal = custo + acrescimo;
+
+            novos[p.produto_id] = precoFinal;
         }
 
-        setValoresFinais(novosValores);
-    }, [listaFinalSemDuplicados, porcentagensFirebase]);
+        setValoresFinais(novos);
+    }, [listaFinalSemDuplicados, custosCache, porcentagensFirebase]);
 
     // ======================================================
     // ✅ CARROSSEL
@@ -152,6 +198,26 @@ export default function Home() {
 
             return novo;
         });
+    }, [listaFinalSemDuplicados]);
+
+     useEffect(() => {
+        async function carregarCustosDaPagina() {
+            if (listaFinalSemDuplicados.length === 0) return;
+
+            for (const p of listaFinalSemDuplicados) {
+                const codigo = String(p.codigo);
+
+                // ✅ Já está no cache?
+                if (custosCache[codigo] !== undefined) continue;
+
+                // ✅ Buscar com delay
+                await buscarCustoPorCodigo(codigo);
+            }
+
+            setCustosCarregados(true);
+        }
+
+        carregarCustosDaPagina();
     }, [listaFinalSemDuplicados]);
 
     const nextImg = (produtoId, total) => {
@@ -183,48 +249,53 @@ export default function Home() {
     // ======================================================
     return (
         <div>
-            <NavBar ResultsSearch={setProdutosBusca} ScrollToProducts={scrollToProducts} />
+           
+       
+                <>
+                    <NavBar ResultsSearch={setProdutosBusca} ScrollToProducts={scrollToProducts} />
 
-            <div className="catalogo-wrapper">
-                <CategoriasSideBar />
+                    <div className="catalogo-wrapper">
+                        <CategoriasSideBar />
 
-                <div className="catalogo-container">
-                    <h1 className="catalogo-titulo">Produtos</h1>
+                        <div className="catalogo-container">
+                            <h1 className="catalogo-titulo">Produtos</h1>
 
-                    {!loading && listaFinalSemDuplicados.length === 0 && (
-                        <p style={{
-                            textAlign: "center",
-                            fontSize: "20px",
-                            width: "100%",
-                            padding: "40px 0",
-                            color: "#555"
-                        }}>
-                            Ops... Não temos no nosso catálogo, tente buscar outro.
-                        </p>
-                    )}
+                            {!loading && listaFinalSemDuplicados.length === 0 && (
+                                <p style={{
+                                    textAlign: "center",
+                                    fontSize: "20px",
+                                    width: "100%",
+                                    padding: "40px 0",
+                                    color: "#555"
+                                }}>
+                                    Ops... Não temos no nosso catálogo, tente buscar outro.
+                                </p>
+                            )}
 
-                    {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
+                            {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
 
-                    <div className="catalogo-grid">
-                        {listaFinalSemDuplicados.map((p) => (
-                            <ProdutoCard
-                                key={p.produto_id}
-                                p={p}
-                                valorFinal={valoresFinais[p.produto_id] ?? p.valor}
-                                indexAtual={carrossel[p.produto_id] ?? 0}
-                                nextImg={nextImg}
-                                prevImg={prevImg}
+                            <div className="catalogo-grid">
+                                {listaFinalSemDuplicados.map((p) => (
+                                    <ProdutoCard
+                                        key={p.produto_id}
+                                        p={p}
+                                        valorFinal={valoresFinais[p.produto_id]}
+                                        indexAtual={carrossel[p.produto_id] ?? 0}
+                                        nextImg={nextImg}
+                                        prevImg={prevImg}
+                                    />
+                                ))}
+                            </div>
+
+                            <Pagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                setCurrentPage={setPage}
                             />
-                        ))}
+                        </div>
                     </div>
-
-                    <Pagination
-                        currentPage={page}
-                        totalPages={totalPages}
-                        setCurrentPage={setPage}
-                    />
-                </div>
-            </div>
+                </>
+           
         </div>
     );
 }
