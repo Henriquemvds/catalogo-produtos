@@ -1,9 +1,33 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../Firebase";
 import "../styles/ProdutoCard.css";
 
 const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg }) {
     const midias = p.midias || [];
     const totalImagens = midias.length;
+
+      useEffect(() => {
+    async function carregarPorcentagem() {
+      try {
+        const ref = collection(db, "produtos");
+        const snap = await getDocs(ref);
+
+        const lista = snap.docs.map(doc => ({
+          produto_id: doc.id,
+          ...doc.data()
+        }));
+
+        console.log(lista);
+      } catch (error) {
+        console.error("Erro ao carregar produtos:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    carregarPorcentagem();
+  }, []);
 
     return (
         <div className="produto-card" key={p.produto_id}>
