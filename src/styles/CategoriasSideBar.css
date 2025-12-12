@@ -1,4 +1,4 @@
-/* 🟦 Wrapper geral: sidebar + catalogo */
+/* 🟦 Wrapper */
 .catalogo-wrapper {
     display: flex;
     gap: 24px;
@@ -6,7 +6,7 @@
     padding: 20px;
 }
 
-/* 🟧 Sidebar */
+/* 🟧 SIDEBAR BASE */
 .categorias-sidebar {
     width: 300px;
     background: linear-gradient(180deg, #184B89, #F47844);
@@ -23,128 +23,176 @@
     padding-bottom: 6px;
 }
 
+/* ========================================================= */
+/* 🟦 DESKTOP (HOVER LATERAL)                                */
+/* ========================================================= */
+
 .categorias-sidebar ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.categorias-sidebar li {
+.categoria-item {
     padding: 8px 6px;
     border-radius: 6px;
     cursor: pointer;
     transition: background 0.25s;
-}
-
-.categorias-sidebar li:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-/* ===================================== */
-/* 🔥 EFEITOS DAS SUBLISTAS */
-/* ===================================== */
-
-.categoria-item {
-    margin-bottom: 6px;
     position: relative;
 }
 
-/* 👉 SUBLISTA DO PRIMEIRO NÍVEL = abrir para a direita */
-.categoria-item > .sublista {
+.categoria-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Sublista abre lateralmente — DESKTOP */
+.sublista {
     position: absolute;
     top: 0;
     left: 100%;
-    width: 180px;
+    width: 200px;
     z-index: 9999;
 
-     background: linear-gradient(180deg, #184B89, #F47844);
-    backdrop-filter: blur(2px);
+    background: linear-gradient(180deg, #184B89, #F47844);
     border-radius: 8px;
     padding: 10px;
 
-    max-height: 0;
     opacity: 0;
-    overflow: hidden;
     pointer-events: none;
-
     transform: translateX(10px);
-    transition:
-        max-height 0.35s ease,
-        opacity 0.25s ease,
-        transform 0.25s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-/* 👉 PRIMERIO NÍVEL: abre ao passar mouse */
 .categoria-item:hover > .sublista {
-    max-height: 800px;
     opacity: 1;
     pointer-events: auto;
     transform: translateX(0);
-     padding: 5px;
 }
 
-/* 👉 SUBLISTAS INTERNAS (nível 2) = abrir PARA BAIXO */
 .sublista .sublista {
-    position: relative;
-    left: 0;
+    left: 100%;
     top: 0;
-
-    margin-left: 12px;
-    background: none;
-    padding: 0;
-    border-radius: 0;
-    padding: 5px;
-
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.35s ease;
-}
-
-/* 👉 nível 2 abre ao passar mouse */
-.sublista li:hover > .sublista {
-    max-height: 500px;
 }
 
 .seta {
-    margin-right: 5px;
+    margin-left: 6px;
+    font-size: 10px;
+    transition: transform 0.25s ease;
 }
 
-/* ===================================== */
-/* RESPONSIVIDADE (SEU CÓDIGO ORIGINAL) */
-/* ===================================== */
+.categoria-item:hover > .categoria-header .seta {
+    transform: rotate(-90deg);
+}
 
-/* 📱 1) Celular compacto (até 480px) */
-@media (max-width: 480px) {
+/* ========================================================= */
+/* 📱 MOBILE CORRETO (VERTICAL + CLICÁVEL)                   */
+/* ========================================================= */
+
+.hamburguer-btn {
+    display: none;
+}
+
+/* ========================================================= */
+/* 📱 MOBILE — sublistas por clique, abrindo PARA BAIXO      */
+/* ========================================================= */
+
+@media (max-width: 768px) {
+
+    /* Botão hambúrguer */
+    .hamburguer-btn {
+        display: block;
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 9999;
+        background: #184B89;
+        border: none;
+        color: white;
+        font-size: 24px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+
+    /* Sidebar vira menu lateral */
+    .categorias-sidebar {
+        position: fixed;
+        top: 0;
+        left: -260px;
+        height: 100vh;
+        width: 260px !important;
+        overflow-y: auto;
+        transition: left 0.35s ease;
+        z-index: 9998;
+        padding-top: 60px;
+    }
+
+    .categorias-sidebar.mostrar-menu {
+        left: 0;
+    }
+
+    /* Tela escurecida */
+    .menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0,0,0,0.55);
+        z-index: 9997;
+    }
+
+    /* --------------------------------------------- */
+    /* SUBLISTAS MOBILE — comportamento vertical     */
+    /* --------------------------------------------- */
+
+    /* IMPORTANTE: desligar total o hover do desktop */
+    .categoria-item:hover > .sublista {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        transform: none !important;
+    }
+
+    /* Estilo base: escondido */
+    .sublista {
+        position: relative !important;
+        left: 0 !important;
+        top: 0 !important;
+
+        width: 100% !important;
+        margin-top: 6px;
+        margin-left: 12px;
+
+        background: rgba(255,255,255,0.10);
+        border-radius: 6px;
+
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height 0.35s ease, opacity 0.25s ease;
+    }
+
+    /* Quando abrir via .mostrar (CLIQUE) */
+    .sublista.mostrar {
+        max-height: 800px; /* valor grande para expandir */
+        opacity: 1;
+        padding: 10px 10px;
+    }
+
+    /* Seta gira ao abrir */
+    .seta.aberta {
+        transform: rotate(180deg) !important;
+    }
+
+    .categoria-item {
+        padding: 10px;
+    }
+
     .catalogo-wrapper {
         flex-direction: column;
         padding: 10px;
-        gap: 16px;
-    }
-
-    .categorias-sidebar {
-        width: 100%;
-        padding: 16px;
-        text-align: center;
-    }
-}
-
-/* 📱 2) Celular normal (481px a 768px) */
-@media (max-width: 768px) {
-    .catalogo-wrapper {
-        flex-direction: column;
-        padding: 14px;
-        gap: 18px;
-         text-align: center;
-    }
-
-    .categorias-sidebar {
-        width: 90%;
-    }
-}
-
-/* 📱 3) Tablet (769px a 1024px) */
-@media (max-width: 1024px) {
-    .catalogo-wrapper {
-        gap: 20px;
     }
 }
