@@ -35,8 +35,8 @@ export default function Home() {
         async function carregarPorcentagens() {
             try {
                 const snap = await getDocs(collection(db, "produtos"));
-
                 const mapa = {};
+
                 snap.forEach(doc => {
                     mapa[doc.id] = doc.data().porcentagem || 0;
                 });
@@ -58,30 +58,21 @@ export default function Home() {
             const url = `http://localhost:3000/custos/produto/${codigo}`;
             const response = await axios.get(url);
 
-            // ✅ API retorna { data: [ {...} ] }
             const item = response.data?.data?.[0] || null;
             const custo = item?.custoVirtual ?? null;
 
-            // ✅ Salvar no cache
             setCustosCache(prev => ({
                 ...prev,
                 [codigo]: custo
             }));
 
-            // ✅ Delay para não travar API
             await new Promise(res => setTimeout(res, 200));
-
             return custo;
         } catch (err) {
             console.error("Erro ao buscar custo por código:", codigo, err);
             return null;
         }
     }
-
-    // ======================================================
-    // ✅ CARREGAR CUSTOS PARA OS PRODUTOS DA PÁGINA
-    // ======================================================
-
 
     // ======================================================
     // ✅ CARREGAMENTO NORMAL (API DE PRODUTOS)
@@ -101,17 +92,8 @@ export default function Home() {
                 const total = data.total || 0;
 
                 setTotalPages(Math.ceil(total / limit));
-
-                const mapa = new Map();
-                const filtrados = items.filter(p => {
-                    if (mapa.has(p.produto_id)) return false;
-                    mapa.set(p.produto_id, true);
-                    return true;
-                });
-
-                setProdutos(filtrados);
+                setProdutos(items);
                 setLoading(false);
-
             } catch (err) {
                 console.error("Erro ao carregar:", err);
                 setLoading(false);
@@ -126,7 +108,6 @@ export default function Home() {
     // ======================================================
     const getProdutosPaginados = () => {
         if (!produtosBusca) return produtos;
-
         const inicio = (page - 1) * limit;
         return produtosBusca.slice(inicio, inicio + limit);
     };
@@ -139,26 +120,27 @@ export default function Home() {
     }, [produtosBusca]);
 
     // ======================================================
-    // ✅ LISTA FINAL MEMORIZADA
+    // ✅ LISTA FINAL
     // ======================================================
     const listaFinal = useMemo(() => {
         return produtosBusca ? getProdutosPaginados() : produtos;
     }, [produtosBusca, produtos, page]);
 
     // ======================================================
-    // ✅ REMOVER DUPLICADOS
+    // ✅ REMOVER DUPLICADOS (MANTÉM SEMPRE O ÚLTIMO)
     // ======================================================
     const listaFinalSemDuplicados = useMemo(() => {
         const mapa = new Map();
-        return listaFinal.filter(p => {
-            if (mapa.has(p.produto_id)) return false;
-            mapa.set(p.produto_id, true);
-            return true;
+
+        listaFinal.forEach(p => {
+            mapa.set(p.produto_id, p);
         });
+
+        return Array.from(mapa.values());
     }, [listaFinal]);
 
     // ======================================================
-    // ✅ CALCULAR VALORES FINAIS (CUSTO + PORCENTAGEM)
+    // ✅ CALCULAR VALORES FINAIS
     // ======================================================
     useEffect(() => {
         const novos = {};
@@ -173,11 +155,8 @@ export default function Home() {
             }
 
             const porcentagem = porcentagensFirebase[codigo] || 0;
-
             const acrescimo = custo * (porcentagem / 100);
-            const precoFinal = custo + acrescimo;
-
-            novos[p.produto_id] = precoFinal;
+            novos[p.produto_id] = custo + acrescimo;
         }
 
         setValoresFinais(novos);
@@ -189,28 +168,25 @@ export default function Home() {
     useEffect(() => {
         setCarrossel(prev => {
             const novo = { ...prev };
-
             listaFinalSemDuplicados.forEach(p => {
                 if (!(p.produto_id in novo)) {
                     novo[p.produto_id] = 0;
                 }
             });
-
             return novo;
         });
     }, [listaFinalSemDuplicados]);
 
-     useEffect(() => {
+    // ======================================================
+    // ✅ CARREGAR CUSTOS DA PÁGINA
+    // ======================================================
+    useEffect(() => {
         async function carregarCustosDaPagina() {
             if (listaFinalSemDuplicados.length === 0) return;
 
             for (const p of listaFinalSemDuplicados) {
                 const codigo = String(p.codigo);
-
-                // ✅ Já está no cache?
                 if (custosCache[codigo] !== undefined) continue;
-
-                // ✅ Buscar com delay
                 await buscarCustoPorCodigo(codigo);
             }
 
@@ -234,9 +210,6 @@ export default function Home() {
         }));
     };
 
-    // ======================================================
-    // ✅ SCROLL
-    // ======================================================
     const scrollToProducts = () => {
         const section = document.querySelector(".catalogo-container");
         if (section) {
@@ -249,52 +222,48 @@ export default function Home() {
     // ======================================================
     return (
         <div>
-        
-                <>
-                    <NavBar ResultsSearch={setProdutosBusca} ScrollToProducts={scrollToProducts} />
+            <NavBar ResultsSearch={setProdutosBusca} ScrollToProducts={scrollToProducts} />
 
-                    <div className="catalogo-wrapper">
-                        <CategoriasSideBar />
+            <div className="catalogo-wrapper">
+                <CategoriasSideBar />
 
-                        <div className="catalogo-container">
-                            <h1 className="catalogo-titulo">Produtos</h1>
+                <div className="catalogo-container">
+                    <h1 className="catalogo-titulo">Produtos</h1>
 
-                            {!loading && listaFinalSemDuplicados.length === 0 && (
-                                <p style={{
-                                    textAlign: "center",
-                                    fontSize: "20px",
-                                    width: "100%",
-                                    padding: "40px 0",
-                                    color: "#555"
-                                }}>
-                                    Ops... Não temos no nosso catálogo, tente buscar outro.
-                                </p>
-                            )}
+                    {!loading && listaFinalSemDuplicados.length === 0 && (
+                        <p style={{
+                            textAlign: "center",
+                            fontSize: "20px",
+                            width: "100%",
+                            padding: "40px 0",
+                            color: "#555"
+                        }}>
+                            Ops... Não temos no nosso catálogo, tente buscar outro.
+                        </p>
+                    )}
 
-                            {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
+                    {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
 
-                            <div className="catalogo-grid">
-                                {listaFinalSemDuplicados.map((p) => (
-                                    <ProdutoCard
-                                        key={p.produto_id}
-                                        p={p}
-                                        valorFinal={valoresFinais[p.produto_id]}
-                                        indexAtual={carrossel[p.produto_id] ?? 0}
-                                        nextImg={nextImg}
-                                        prevImg={prevImg}
-                                    />
-                                ))}
-                            </div>
-
-                            <Pagination
-                                currentPage={page}
-                                totalPages={totalPages}
-                                setCurrentPage={setPage}
+                    <div className="catalogo-grid">
+                        {listaFinalSemDuplicados.map(p => (
+                            <ProdutoCard
+                                key={p.produto_id}
+                                p={p}
+                                valorFinal={valoresFinais[p.produto_id]}
+                                indexAtual={carrossel[p.produto_id] ?? 0}
+                                nextImg={nextImg}
+                                prevImg={prevImg}
                             />
-                        </div>
+                        ))}
                     </div>
-                </>
-           
+
+                    <Pagination
+                        currentPage={page}
+                        totalPages={totalPages}
+                        setCurrentPage={setPage}
+                    />
+                </div>
+            </div>
         </div>
     );
 }
