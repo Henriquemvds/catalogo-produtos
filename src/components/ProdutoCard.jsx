@@ -1,40 +1,19 @@
-import { memo, useEffect } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../Firebase";
+import { memo } from "react";
 import "../styles/ProdutoCard.css";
 
-const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg }) {
+const ProdutoCard = memo(function ProdutoCard({ p, valorFinal, indexAtual, nextImg, prevImg }) {
+
+
     const midias = p.midias || [];
     const totalImagens = midias.length;
 
-      useEffect(() => {
-    async function carregarPorcentagem() {
-      try {
-        const ref = collection(db, "produtos");
-        const snap = await getDocs(ref);
 
-        const lista = snap.docs.map(doc => ({
-          produto_id: doc.id,
-          ...doc.data()
-        }));
-
-        console.log(lista);
-      } catch (error) {
-        console.error("Erro ao carregar produtos:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    carregarPorcentagem();
-  }, []);
 
     return (
         <div className="produto-card" key={p.produto_id}>
 
             {/* CARROSSEL */}
             <div className="carrossel-container">
-
                 <div
                     className="carrossel-slide"
                     style={{ transform: `translateX(-${indexAtual * 100}%)` }}
@@ -54,7 +33,6 @@ const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg 
                     })}
                 </div>
 
-                {/* BOTÕES */}
                 {totalImagens > 1 && (
                     <>
                         <button
@@ -78,6 +56,10 @@ const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg 
             <h2 className="produto-nome">{p.nome}</h2>
 
             <p className="produto-info">
+                <strong>Cod:</strong> {p.codigo}
+            </p>
+
+            <p className="produto-info">
                 <strong>Marca:</strong> {p.marca}
             </p>
 
@@ -85,13 +67,8 @@ const ProdutoCard = memo(function ProdutoCard({ p, indexAtual, nextImg, prevImg 
                 <strong>Modelo:</strong> {p.modelo}
             </p>
 
-            <p className="produto-preco">R$ {p.valor.toFixed(2)}</p>
+            <p className="produto-preco">R$ {valorFinal.toFixed(2)}</p>
 
-            {p.valor_de && (
-                <p className="produto-preco-de">
-                    De: R$ {p.valor_de.toFixed(2)}
-                </p>
-            )}
         </div>
     );
 });

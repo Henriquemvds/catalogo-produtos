@@ -5,6 +5,8 @@ import ProdutoCard from "../components/ProdutoCard";
 import NavBar from "../components/NavBar";
 import CategoriasSideBar from "../components/CategoriasSideBar";
 import Pagination from "../components/Pagination";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../Firebase";
 
 const limit = 30;
 
@@ -16,8 +18,34 @@ export default function Home() {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(false);
 
+    // ✅ porcentagens carregadas de uma vez só
+    const [porcentagensFirebase, setPorcentagensFirebase] = useState({});
+    const [valoresFinais, setValoresFinais] = useState({});
+
     // ======================================================
-    // CARREGAMENTO NORMAL (quando NÃO está em modo de busca)
+    // ✅ CARREGAR PORCENTAGENS DO FIREBASE (1 requisição)
+    // ======================================================
+    useEffect(() => {
+        async function carregarPorcentagens() {
+            try {
+                const snap = await getDocs(collection(db, "produtos"));
+
+                const mapa = {};
+                snap.forEach(doc => {
+                    mapa[doc.id] = doc.data().porcentagem || 0;
+                });
+
+                setPorcentagensFirebase(mapa);
+            } catch (error) {
+                console.error("Erro ao carregar porcentagens:", error);
+            }
+        }
+
+        carregarPorcentagens();
+    }, []);
+
+    // ======================================================
+    // ✅ CARREGAMENTO NORMAL (API)
     // ======================================================
     useEffect(() => {
         if (produtosBusca !== null) return;
@@ -56,7 +84,7 @@ export default function Home() {
     }, [page, produtosBusca]);
 
     // ======================================================
-    // PAGINAÇÃO LOCAL (modo busca)
+    // ✅ PAGINAÇÃO LOCAL (modo busca)
     // ======================================================
     const getProdutosPaginados = () => {
         if (!produtosBusca) return produtos;
@@ -73,14 +101,14 @@ export default function Home() {
     }, [produtosBusca]);
 
     // ======================================================
-    // LISTA FINAL MEMORIZADA
+    // ✅ LISTA FINAL MEMORIZADA
     // ======================================================
     const listaFinal = useMemo(() => {
         return produtosBusca ? getProdutosPaginados() : produtos;
     }, [produtosBusca, produtos, page]);
 
     // ======================================================
-    // REMOVER DUPLICADOS DA LISTA FINAL (produto_id)
+    // ✅ REMOVER DUPLICADOS
     // ======================================================
     const listaFinalSemDuplicados = useMemo(() => {
         const mapa = new Map();
@@ -92,7 +120,25 @@ export default function Home() {
     }, [listaFinal]);
 
     // ======================================================
-    // ATUALIZAR CARROSSEL SOMENTE PARA PRODUTOS NOVOS
+    // ✅ CALCULAR VALORES FINAIS (instantâneo)
+    // ======================================================
+    useEffect(() => {
+        const novosValores = {};
+
+        for (const p of listaFinalSemDuplicados) {
+            const porcentagem = porcentagensFirebase[p.codigo] || 0;
+
+            const acrescimo = p.valor * (porcentagem / 100);
+            const novoValor = p.valor + acrescimo;
+
+            novosValores[p.produto_id] = novoValor;
+        }
+
+        setValoresFinais(novosValores);
+    }, [listaFinalSemDuplicados, porcentagensFirebase]);
+
+    // ======================================================
+    // ✅ CARROSSEL
     // ======================================================
     useEffect(() => {
         setCarrossel(prev => {
@@ -108,27 +154,6 @@ export default function Home() {
         });
     }, [listaFinalSemDuplicados]);
 
-    // ======================================================
-    // PRÉ-CARREGAMENTO DAS IMAGENS
-    // ======================================================
-    useEffect(() => {
-        listaFinalSemDuplicados.forEach(produto => {
-            produto.fotos?.forEach(url => {
-                const img = new Image();
-                img.src = url;
-            });
-        });
-    }, [listaFinalSemDuplicados]);
-
-    const scrollToProducts = () => {
-    const section = document.querySelector(".catalogo-container");
-    if (section) {
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-};
-    // ======================================================
-    // CONTROLES DO CARROSSEL
-    // ======================================================
     const nextImg = (produtoId, total) => {
         setCarrossel(prev => ({
             ...prev,
@@ -143,16 +168,29 @@ export default function Home() {
         }));
     };
 
+    // ======================================================
+    // ✅ SCROLL
+    // ======================================================
+    const scrollToProducts = () => {
+        const section = document.querySelector(".catalogo-container");
+        if (section) {
+            section.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    };
+
+    // ======================================================
+    // ✅ RENDER
+    // ======================================================
     return (
         <div>
-            <NavBar ResultsSearch={setProdutosBusca}  ScrollToProducts={scrollToProducts} />
+            <NavBar ResultsSearch={setProdutosBusca} ScrollToProducts={scrollToProducts} />
 
             <div className="catalogo-wrapper">
                 <CategoriasSideBar />
 
                 <div className="catalogo-container">
                     <h1 className="catalogo-titulo">Produtos</h1>
-                    {/* MENSAGEM QUANDO NÃO HÁ RESULTADOS */}
+
                     {!loading && listaFinalSemDuplicados.length === 0 && (
                         <p style={{
                             textAlign: "center",
@@ -167,12 +205,12 @@ export default function Home() {
 
                     {loading && <p style={{ textAlign: "center" }}>Carregando...</p>}
 
-                    {/* GRID NORMAL */}
                     <div className="catalogo-grid">
                         {listaFinalSemDuplicados.map((p) => (
                             <ProdutoCard
                                 key={p.produto_id}
                                 p={p}
+                                valorFinal={valoresFinais[p.produto_id] ?? p.valor}
                                 indexAtual={carrossel[p.produto_id] ?? 0}
                                 nextImg={nextImg}
                                 prevImg={prevImg}
