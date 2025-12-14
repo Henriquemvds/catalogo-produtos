@@ -55,7 +55,7 @@ export default function Home() {
     // ======================================================
     async function buscarCustoPorCodigo(codigo) {
         try {
-            const url = `http://localhost:3000/custos/produto/${codigo}`;
+            const url = `https://servidor-magazord.vercel.app/custos/produto/${codigo}`;
             const response = await axios.get(url);
 
             const item = response.data?.data?.[0] || null;
