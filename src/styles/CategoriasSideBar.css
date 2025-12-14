@@ -37,14 +37,33 @@
     padding: 8px 6px;
     border-radius: 6px;
     cursor: pointer;
-    transition: background 0.25s;
+    transition: background 0.25s, border-left 0.25s, transform 0.15s;
     position: relative;
+    background: rgba(255,255,255,0.05);
+    border-left: 4px solid transparent;
+}
+
+.categoria-item:hover {
+    background: rgba(255,255,255,0.1);
 }
 
 .categoria-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background 0.25s, transform 0.15s;
+}
+
+.categoria-header:hover,
+.categoria-header.active {
+    background: rgba(255, 255, 255, 0.15);
+    border-left: 4px solid #F47844;
+}
+
+.categoria-header:active {
+    transform: scale(0.98);
 }
 
 /* Sublista abre lateralmente — DESKTOP */
@@ -87,16 +106,12 @@
 }
 
 /* ========================================================= */
-/* 📱 MOBILE CORRETO (VERTICAL + CLICÁVEL)                   */
+/* 📱 MOBILE — sublistas por clique, abrindo PARA BAIXO      */
 /* ========================================================= */
 
 .hamburguer-btn {
     display: none;
 }
-
-/* ========================================================= */
-/* 📱 MOBILE — sublistas por clique, abrindo PARA BAIXO      */
-/* ========================================================= */
 
 @media (max-width: 768px) {
 
@@ -149,7 +164,7 @@
     /* SUBLISTAS MOBILE — comportamento vertical     */
     /* --------------------------------------------- */
 
-    /* IMPORTANTE: desligar total o hover do desktop */
+    /* Desliga hover desktop */
     .categoria-item:hover > .sublista {
         opacity: 1 !important;
         pointer-events: auto !important;
@@ -172,7 +187,7 @@
         overflow: hidden;
         max-height: 0;
         opacity: 0;
-        transition: max-height 0.35s ease, opacity 0.25s ease;
+        transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.25s ease;
     }
 
     /* Quando abrir via .mostrar (CLIQUE) */
@@ -187,10 +202,13 @@
         transform: rotate(180deg) !important;
     }
 
+    /* Itens da lista mobile */
     .categoria-item {
         padding: 10px;
+        margin-bottom: 6px;
     }
 
+    /* Flex vertical */
     .catalogo-wrapper {
         flex-direction: column;
         padding: 10px;
