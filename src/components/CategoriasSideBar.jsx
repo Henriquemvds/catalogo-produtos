@@ -58,7 +58,7 @@ export default function CategoriasSideBar({ onCategoriasSelect }) {
                 Array.isArray(produto.categorias) && produto.categorias.includes(id)
             );
 
-            console.log("Produtos filtrados pela categoria clicada:", filtrados);
+            setAbertos(prev => ({ ...prev, menu: false }))
 
             // ✅ envia para o Home
             if (onCategoriasSelect) onCategoriasSelect(filtrados);
@@ -122,7 +122,7 @@ export default function CategoriasSideBar({ onCategoriasSelect }) {
         return (
             <li key={cat.id} className="categoria-item">
                 <div
-                    className="categoria-header"
+                  className={`categoria-header ${aberto ? "active" : ""}`}
                     onClick={() => {
                         if (temFilhos) {
                             toggle(cat.id);
