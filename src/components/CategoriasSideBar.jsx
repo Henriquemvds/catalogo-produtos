@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../styles/CategoriasSideBar.css";
 
-export default function CategoriasSideBar() {
+export default function CategoriasSideBar({ onCategoriasSelect }) {
     const [categorias, setCategorias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [abertos, setAbertos] = useState({}); // controla dropdowns e o menu mobile
@@ -44,6 +44,29 @@ export default function CategoriasSideBar() {
         return raiz;
     };
 
+    const enviarCategoriaParaApi = async (id) => {
+        try {
+            const response = await fetch(
+                `https://servidor-magazord.vercel.app/categorias/produtos/search?categoria=${id}`,
+                { method: "GET" }
+            );
+
+            const data = await response.json();
+
+            // filtrar produtos que contenham o id no array categorias
+            const filtrados = data.filter(produto =>
+                Array.isArray(produto.categorias) && produto.categorias.includes(id)
+            );
+
+            console.log("Produtos filtrados pela categoria clicada:", filtrados);
+
+            // ✅ envia para o Home
+            if (onCategoriasSelect) onCategoriasSelect(filtrados);
+
+        } catch (error) {
+            console.error("Erro ao buscar produtos por categoria:", error);
+        }
+    };
     // --------------------------------------------------------------
     // Carregamento paginado automático
     // --------------------------------------------------------------
@@ -100,7 +123,13 @@ export default function CategoriasSideBar() {
             <li key={cat.id} className="categoria-item">
                 <div
                     className="categoria-header"
-                    onClick={() => temFilhos && toggle(cat.id)}
+                    onClick={() => {
+                        if (temFilhos) {
+                            toggle(cat.id);
+                        } else {
+                            enviarCategoriaParaApi(cat.id);
+                        }
+                    }}
                 >
                     {cat.nome}
 
@@ -130,7 +159,7 @@ export default function CategoriasSideBar() {
 
             {/* Sidebar */}
             <aside className={`categorias-sidebar ${abertos.menu ? "mostrar-menu" : ""}`}>
-                
+
                 <h2>Todas as categorias</h2>
 
                 {loading && <p>Carregando...</p>}

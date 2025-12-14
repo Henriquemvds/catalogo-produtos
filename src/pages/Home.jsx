@@ -8,7 +8,7 @@ import Pagination from "../components/Pagination";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../Firebase";
 
-const limit = 15;
+const limit = 30;
 
 export default function Home() {
     const [produtos, setProdutos] = useState([]);
@@ -73,6 +73,7 @@ export default function Home() {
             return null;
         }
     }
+   
 
     // ======================================================
     // ✅ CARREGAMENTO NORMAL (API DE PRODUTOS)
@@ -225,7 +226,7 @@ export default function Home() {
             <NavBar ResultsSearch={setProdutosBusca} ScrollToProducts={scrollToProducts} />
 
             <div className="catalogo-wrapper">
-                <CategoriasSideBar />
+             <CategoriasSideBar onCategoriasSelect={setProdutosBusca} />
 
                 <div className="catalogo-container">
                     <h1 className="catalogo-titulo">Produtos</h1>
